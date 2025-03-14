@@ -1,0 +1,24 @@
+{
+  "configurations" : [
+    {
+      "id" : "32B93ADE-CB9E-4A55-B973-C3312E4086CD",
+      "name" : "Configuration 1",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:RespectMoney.xcodeproj",
+        "identifier" : "491BA03C2D83B6EF0087BD67",
+        "name" : "RespectMoneyTests"
+      }
+    }
+  ],
+  "version" : 1
+}
