@@ -12,7 +12,7 @@ struct EditExpenseView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
 
-    @Bindable var expense: Expense
+    @State var expense: Expense
 
     let categories = ["Food", "Transport", "Shopping", "Entertainment", "Bills", "Other"]
 
@@ -31,18 +31,39 @@ struct EditExpenseView: View {
 
                 DatePicker("Date", selection: $expense.date, displayedComponents: .date)
 
-                Button("Save Changes") {
-                    try? modelContext.save()
-                    dismiss()
-                }
-                .disabled(expense.title.isEmpty || expense.amount <= 0)
             }
             .navigationTitle("Edit Expense")
             .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button("Cancel") {
+                        dismiss()
+                    }
+                }
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("Cancel") { dismiss() }
+                    Button("Save") {
+                        try? modelContext.save()
+                        dismiss()
+                    }
+                    .disabled(expense.title.isEmpty || expense.amount <= 0)
                 }
             }
         }
     }
 }
+
+#Preview {
+    do {
+        let container = try ModelContainer(for: Expense.self, configurations: ModelConfiguration(isStoredInMemoryOnly: true))
+        
+        let previewExpense = Expense(title: "Groceries", amount: 45.99, category: "Food", date: Date())
+        
+        let context = ModelContext(container)
+        context.insert(previewExpense)
+        
+        return EditExpenseView(expense: previewExpense)
+            .modelContainer(container)
+    } catch {
+        return Text("Failed to create preview: \(error.localizedDescription)")
+    }
+}
+

@@ -14,6 +14,8 @@ struct ExpenseListView: View {
     
     @State private var selectedCategory: String = "All"
     @State private var selectedDate: Date = Date()
+    @State private var selectedExpense: Expense?
+    @State private var showAddExpense: Bool = false
     
     let categories = ["All", "Food", "Transport", "Shopping", "Entertainment", "Bills", "Other"]
     
@@ -43,7 +45,9 @@ struct ExpenseListView: View {
                 
                 List {
                     ForEach(filteredExpenses) { expense in
-                        NavigationLink(destination: EditExpenseView(expense: expense)) {
+                        Button {
+                            selectedExpense = expense
+                        } label: {
                             HStack {
                                 VStack(alignment: .leading) {
                                     Text(expense.title)
@@ -51,27 +55,37 @@ struct ExpenseListView: View {
                                         .foregroundStyle(.secondary)
                                     Text(expense.category)
                                         .font(.subheadline)
-                                        .foregroundStyle(.secondary)                                }
+                                        .foregroundStyle(.secondary)
+                                }
                                 Spacer()
                                 Text("$\(expense.amount, specifier: "%.2f")")
                                     .font(.headline)
                                     .foregroundStyle(.secondary)
                             }
+                            .contentShape(Rectangle())
                         }
+                        .buttonStyle(.plain)
                     }
                     .onDelete(perform: deleteExpense)
                 }
+                .sheet(item: $selectedExpense) { expense in
+                    EditExpenseView(expense: expense)
+                }
             }
             .navigationTitle("Expenses")
-            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    NavigationLink(destination: AddExpenseView()) {
+                    Button {
+                        showAddExpense = true
+                    } label: {
                         Image(systemName: "plus.circle.fill")
                             .font(.title)
                     }
                 }
             }
+        }
+        .sheet(isPresented: $showAddExpense) {
+            AddExpenseView()
         }
     }
     

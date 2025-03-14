@@ -48,18 +48,21 @@ struct AddExpenseView: View {
                         Text(category).tag(category)
                     }
                 }
-                
+    
                 DatePicker("Date", selection: $date, displayedComponents: .date)
-                
-                Button("Save Expense") {
-                    addExpense()
-                }
-                .disabled(title.isEmpty || amountText.isEmpty || category.isEmpty)
             }
             .navigationTitle("Add Expense")
             .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button("Cancel") {
+                        dismiss()
+                    }
+                }
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("Cancel") { dismiss() }
+                    Button("Save") {
+                        addExpense()
+                    }
+                    .disabled(title.isEmpty || amountText.isEmpty || category.isEmpty)
                 }
             }
             .alert("Invalid Amount", isPresented: $showError) {
