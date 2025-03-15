@@ -12,9 +12,17 @@ struct SettingsView: View {
     @AppStorage("currency") private var currency: String = "USD"
     @AppStorage("defaultCategory") private var defaultCategory: String = "Food"
     @Environment(\.modelContext) private var modelContext
+    @AppStorage("categories") private var categoriesString: String = ""
+    
+    var categories: [String] {
+        categoriesString.components(separatedBy: ",").filter { !$0.isEmpty } // Convert CSV to array
+    }
+    /// ✅ Get a list of all available currency codes
+    var allCurrencies: [String] {
+        Set(Locale.availableIdentifiers.compactMap { Locale(identifier: $0).currency?.identifier })
+            .sorted() // Sort alphabetically
+    }
 
-    let currencies = ["CLP", "USD", "EUR", "GBP", "JPY", "CAD", "AUD"]
-    let categories = ["Food", "Transport", "Shopping", "Entertainment", "Bills", "Other"]
     @State private var showDeleteAlert = false
 
     var body: some View {
@@ -22,10 +30,12 @@ struct SettingsView: View {
             Form {
                 Section(header: Text("Preferences")) {
                     Picker("Currency", selection: $currency) {
-                        ForEach(currencies, id: \.self) { currency in
-                            Text(currency).tag(currency)
+                        ForEach(allCurrencies, id: \.self) { currencyCode in
+                            Text("\(currencyCode) (\(currencySymbol(for: currencyCode)))")
+                                .tag(currencyCode)
                         }
                     }
+                    .pickerStyle(.navigationLink)
 
                     Picker("Default Category", selection: $defaultCategory) {
                         ForEach(categories, id: \.self) { category in
@@ -75,6 +85,12 @@ struct SettingsView: View {
         } catch {
             print("Error deleting all data: \(error.localizedDescription)")
         }
+    }
+    
+    /// ✅ Get the currency symbol for a given currency code
+    private func currencySymbol(for currencyCode: String) -> String {
+        let locale = Locale(identifier: Locale.identifier(fromComponents: [NSLocale.Key.currencyCode.rawValue: currencyCode]))
+        return locale.currencySymbol ?? currencyCode
     }
 }
 
