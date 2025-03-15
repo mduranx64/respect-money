@@ -13,6 +13,7 @@ struct EditExpenseView: View {
     @Environment(\.dismiss) private var dismiss
     
     @State var expense: Expense
+    @State var showDeleteAlert: Bool = false
     
     let categories = ["Food", "Transport", "Shopping", "Entertainment", "Bills", "Other"]
     
@@ -22,6 +23,7 @@ struct EditExpenseView: View {
                 TextField("Title", text: $expense.title)
                 TextField("Amount", value: $expense.amount, format: .number)
                     .keyboardType(.decimalPad)
+                    .textInputAutocapitalization(.sentences)
                 
                 Picker("Category", selection: $expense.category) {
                     ForEach(categories, id: \.self) { category in
@@ -31,6 +33,23 @@ struct EditExpenseView: View {
                 
                 DatePicker("Date", selection: $expense.date, displayedComponents: .date)
                 
+                
+                Section {
+                    Button("Delete") {
+                        showDeleteAlert = true
+                    }
+                    .foregroundStyle(.red)  // Set text color to red
+                    .frame(maxWidth: .infinity)
+                }
+                .alert("Delete Expense?", isPresented: $showDeleteAlert) {
+                    Button("Cancel", role: .cancel) { }
+                    Button("Delete", role: .destructive) {
+                        modelContext.delete(expense)
+                        dismiss()
+                    }
+                } message: {
+                    Text("Are you sure you want to delete this expense? This action cannot be undone.")
+                }
             }
             .navigationTitle("Edit Expense")
             .toolbar {

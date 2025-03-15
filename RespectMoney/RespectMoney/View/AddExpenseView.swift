@@ -28,6 +28,7 @@ struct AddExpenseView: View {
                 TextField("Title", text: $title)
                 TextField("Amount", value: $amount, format: .number)
                     .keyboardType(.decimalPad)
+                    .textInputAutocapitalization(.sentences)
                 
                 Picker("Category", selection: $category) {
                     ForEach(categories, id: \.self) { category in
@@ -56,6 +57,7 @@ struct AddExpenseView: View {
             } message: {
                 Text("Please enter a valid amount greater than zero.")
             }
+            
         }
     }
     
