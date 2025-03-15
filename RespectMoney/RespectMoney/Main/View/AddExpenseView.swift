@@ -29,44 +29,45 @@ struct AddExpenseView: View {
     
     var body: some View {
         NavigationStack {
-            Form {
-                TextField("Title", text: $title)
-                    .textInputAutocapitalization(.sentences)
-                    .autocorrectionDisabled(true)
-                
-                TextField("Amount", text: $amount)
-                    .keyboardType(.decimalPad)
-                    .numberInput($amount)
-                
-                Picker("Category", selection: $category) {
-                    ForEach(categories, id: \.self) { category in
-                        Text(category).tag(category)
+            ScrollView {
+                Form {
+                    TextField("Title", text: $title)
+                        .textInputAutocapitalization(.sentences)
+                        .autocorrectionDisabled(true)
+                    
+                    TextField("Amount", text: $amount)
+                        .keyboardType(.decimalPad)
+                        .numberInput($amount)
+                    
+                    Picker("Category", selection: $category) {
+                        ForEach(categories, id: \.self) { category in
+                            Text(category).tag(category)
+                        }
+                    }
+                    
+                    DatePicker("Date", selection: $date, displayedComponents: .date)
+                }
+                .navigationTitle("Add Expense")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .topBarLeading) {
+                        Button("Cancel") {
+                            dismiss()
+                        }
+                    }
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button("Save") {
+                            addExpense()
+                        }
+                        .disabled(title.isEmpty || amount.isEmpty || category.isEmpty)
                     }
                 }
-                
-                DatePicker("Date", selection: $date, displayedComponents: .date)
-            }
-            .navigationTitle("Add Expense")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button("Cancel") {
-                        dismiss()
-                    }
-                }
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button("Save") {
-                        addExpense()
-                    }
-                    .disabled(title.isEmpty || amount.isEmpty || category.isEmpty)
+                .alert("Invalid Amount", isPresented: $showError) {
+                    Button("OK", role: .cancel) { }
+                } message: {
+                    Text("Please enter a valid amount greater than zero.")
                 }
             }
-            .alert("Invalid Amount", isPresented: $showError) {
-                Button("OK", role: .cancel) { }
-            } message: {
-                Text("Please enter a valid amount greater than zero.")
-            }
-            
         }
     }
     

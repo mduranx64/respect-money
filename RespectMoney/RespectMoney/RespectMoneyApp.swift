@@ -37,10 +37,18 @@ struct RespectMoneyApp: App {
     }
     
     private func setupDefaultData() {
+        
         let defaultCategories = "Food,Transport,Shopping,Entertainment,Bills,Other"
+        
         // ✅ Set default categories only on first launch
         if UserDefaults.standard.string(forKey: "categories") == nil {
             UserDefaults.standard.set(defaultCategories, forKey: "categories")
+        }
+        
+        // ✅ Detect and set the local currency if not already set
+        if UserDefaults.standard.string(forKey: "currency") == nil {
+            let localCurrency = Locale.current.currency?.identifier ?? "USD" // Get system currency, fallback to USD
+            UserDefaults.standard.set(localCurrency, forKey: "currency")
         }
     }
 }

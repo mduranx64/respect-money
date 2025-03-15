@@ -17,32 +17,34 @@ struct CategoriesView: View {
 
     var body: some View {
         NavigationStack {
-            Form {
-                Section(header: Text("Expense Categories")) {
-                    HStack {
-                        TextField("New Category", text: $newCategory)
-                            .autocorrectionDisabled(true)
-                            .textInputAutocapitalization(.words)
-
-                        Button(action: addCategory) {
-                            Image(systemName: "plus.circle.fill")
-                                .foregroundColor(.blue)
+            ScrollView {
+                Form {
+                    Section(header: Text("Expense Categories")) {
+                        HStack {
+                            TextField("New Category", text: $newCategory)
+                                .autocorrectionDisabled(true)
+                                .textInputAutocapitalization(.words)
+                            
+                            Button(action: addCategory) {
+                                Image(systemName: "plus.circle.fill")
+                                    .foregroundColor(.blue)
+                            }
+                            .disabled(newCategory.isEmpty)
                         }
-                        .disabled(newCategory.isEmpty)
-                    }
-                    
-                    List {
-                        ForEach(categoryList, id: \.self) { category in
-                            Text(category)
+                        
+                        List {
+                            ForEach(categoryList, id: \.self) { category in
+                                Text(category)
+                            }
+                            .onDelete(perform: deleteCategory)
                         }
-                        .onDelete(perform: deleteCategory)
+                        
+                        
                     }
-                    
-                    
                 }
+                .navigationTitle("Categories")
+                .navigationBarTitleDisplayMode(.inline)
             }
-            .navigationTitle("Categories")
-            .navigationBarTitleDisplayMode(.inline)
         }
     }
 

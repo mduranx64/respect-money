@@ -44,55 +44,57 @@ struct EditExpenseView: View {
 
     var body: some View {
         NavigationStack {
-            Form {
-                TextField("Title", text: $editModel.title)
-                    .textInputAutocapitalization(.sentences)
-                    .autocorrectionDisabled(true)
-
-                // ✅ Use a separate model to prevent auto-saving
-                TextField("Amount", text: $editModel.amount)
-                    .numberInput($editModel.amount)
-
-                Picker("Category", selection: $editModel.category) {
-                    ForEach(categories, id: \.self) { category in
-                        Text(category)
-                    }
-                }
-
-                DatePicker("Date", selection: $editModel.date, displayedComponents: .date)
-
-                Section {
-                    Button("Delete") {
-                        showDeleteAlert = true
-                    }
-                    .foregroundStyle(.red)
-                    .frame(maxWidth: .infinity)
-                }
-                .alert("Delete Expense?", isPresented: $showDeleteAlert) {
-                    Button("Cancel", role: .cancel) { }
-                    Button("Delete", role: .destructive) {
-                        modelContext.delete(expense)
-                        dismiss()
-                    }
-                } message: {
-                    Text("Are you sure you want to delete this expense? This action cannot be undone.")
-                }
-            }
-            .navigationTitle("Edit Expense")
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button("Cancel") {
-                        dismiss() // ✅ Discard all changes
-                    }
-                }
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button("Save") {
-                        if let amount = parseNumber(editModel.amount) {
-                            editModel.amount = EditExpenseView.formatNumber(amount) // ✅ Ensure correct formatting
-                            saveChanges(amount: amount)
+            ScrollView {
+                Form {
+                    TextField("Title", text: $editModel.title)
+                        .textInputAutocapitalization(.sentences)
+                        .autocorrectionDisabled(true)
+                    
+                    // ✅ Use a separate model to prevent auto-saving
+                    TextField("Amount", text: $editModel.amount)
+                        .numberInput($editModel.amount)
+                    
+                    Picker("Category", selection: $editModel.category) {
+                        ForEach(categories, id: \.self) { category in
+                            Text(category)
                         }
                     }
-                    .disabled(editModel.title.isEmpty || parseNumber(editModel.amount) ?? 0 <= 0)
+                    
+                    DatePicker("Date", selection: $editModel.date, displayedComponents: .date)
+                    
+                    Section {
+                        Button("Delete") {
+                            showDeleteAlert = true
+                        }
+                        .foregroundStyle(.red)
+                        .frame(maxWidth: .infinity)
+                    }
+                    .alert("Delete Expense?", isPresented: $showDeleteAlert) {
+                        Button("Cancel", role: .cancel) { }
+                        Button("Delete", role: .destructive) {
+                            modelContext.delete(expense)
+                            dismiss()
+                        }
+                    } message: {
+                        Text("Are you sure you want to delete this expense? This action cannot be undone.")
+                    }
+                }
+                .navigationTitle("Edit Expense")
+                .toolbar {
+                    ToolbarItem(placement: .topBarLeading) {
+                        Button("Cancel") {
+                            dismiss() // ✅ Discard all changes
+                        }
+                    }
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button("Save") {
+                            if let amount = parseNumber(editModel.amount) {
+                                editModel.amount = EditExpenseView.formatNumber(amount) // ✅ Ensure correct formatting
+                                saveChanges(amount: amount)
+                            }
+                        }
+                        .disabled(editModel.title.isEmpty || parseNumber(editModel.amount) ?? 0 <= 0)
+                    }
                 }
             }
         }
