@@ -12,7 +12,7 @@ struct AddExpenseView: View {
     @AppStorage("currency") private var currency: String = "USD"
     @AppStorage("defaultCategory") private var category: String = "Food"
     @AppStorage("categories") private var categoriesString: String = ""
-
+    
     var categories: [String] {
         categoriesString.components(separatedBy: ",").filter { !$0.isEmpty }
     }
@@ -29,45 +29,44 @@ struct AddExpenseView: View {
     
     var body: some View {
         NavigationStack {
-            ScrollView {
-                Form {
-                    TextField("Title", text: $title)
-                        .textInputAutocapitalization(.sentences)
-                        .autocorrectionDisabled(true)
-                    
-                    TextField("Amount", text: $amount)
-                        .keyboardType(.decimalPad)
-                        .numberInput($amount)
-                    
-                    Picker("Category", selection: $category) {
-                        ForEach(categories, id: \.self) { category in
-                            Text(category).tag(category)
-                        }
-                    }
-                    
-                    DatePicker("Date", selection: $date, displayedComponents: .date)
-                }
-                .navigationTitle("Add Expense")
-                .navigationBarTitleDisplayMode(.inline)
-                .toolbar {
-                    ToolbarItem(placement: .topBarLeading) {
-                        Button("Cancel") {
-                            dismiss()
-                        }
-                    }
-                    ToolbarItem(placement: .topBarTrailing) {
-                        Button("Save") {
-                            addExpense()
-                        }
-                        .disabled(title.isEmpty || amount.isEmpty || category.isEmpty)
+            Form {
+                TextField("Title", text: $title)
+                    .textInputAutocapitalization(.sentences)
+                    .autocorrectionDisabled(true)
+                
+                TextField("Amount", text: $amount)
+                    .keyboardType(.decimalPad)
+                    .numberInput($amount)
+                
+                Picker("Category", selection: $category) {
+                    ForEach(categories, id: \.self) { category in
+                        Text(category).tag(category)
                     }
                 }
-                .alert("Invalid Amount", isPresented: $showError) {
-                    Button("OK", role: .cancel) { }
-                } message: {
-                    Text("Please enter a valid amount greater than zero.")
+                
+                DatePicker("Date", selection: $date, displayedComponents: .date)
+            }
+            .navigationTitle("Add Expense")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button("Cancel") {
+                        dismiss()
+                    }
+                }
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Save") {
+                        addExpense()
+                    }
+                    .disabled(title.isEmpty || amount.isEmpty || category.isEmpty)
                 }
             }
+            .alert("Invalid Amount", isPresented: $showError) {
+                Button("OK", role: .cancel) { }
+            } message: {
+                Text("Please enter a valid amount greater than zero.")
+            }
+            
         }
     }
     
