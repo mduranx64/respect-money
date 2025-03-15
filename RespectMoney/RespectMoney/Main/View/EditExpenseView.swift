@@ -11,41 +11,49 @@ import SwiftData
 struct EditExpenseView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
-    
-    @State var expense: Expense
-    @State var showDeleteAlert: Bool = false
-    
+
+    @State private var tempExpense: Expense
+    @State private var showDeleteAlert: Bool = false
+    @State private var amountText: String = "" // Temporary variable
+
     let categories = ["Food", "Transport", "Shopping", "Entertainment", "Bills", "Other"]
-    
+
+    init(expense: Expense) {
+        _tempExpense = State(initialValue: expense) // Create a local copy of the expense
+    }
+
     var body: some View {
         NavigationStack {
             Form {
-                TextField("Title", text: $expense.title)
+                TextField("Title", text: $tempExpense.title)
                     .textInputAutocapitalization(.sentences)
-                
-                TextField("Amount", value: $expense.amount, format: .number)
-                    .keyboardType(.decimalPad)
-                
-                Picker("Category", selection: $expense.category) {
+
+                // ✅ Use a temporary variable for amount
+                TextField("Amount", text: $amountText)
+                    .numberInput($amountText) // Apply validation
+                    .onAppear {
+                        amountText = formatNumber(tempExpense.amount) // Load formatted value
+                    }
+
+                Picker("Category", selection: $tempExpense.category) {
                     ForEach(categories, id: \.self) { category in
                         Text(category)
                     }
                 }
-                
-                DatePicker("Date", selection: $expense.date, displayedComponents: .date)
-                
-                
+
+                DatePicker("Date", selection: $tempExpense.date, displayedComponents: .date)
+
                 Section {
                     Button("Delete") {
                         showDeleteAlert = true
                     }
-                    .foregroundStyle(.red)  // Set text color to red
+                    .foregroundStyle(.red)
                     .frame(maxWidth: .infinity)
                 }
                 .alert("Delete Expense?", isPresented: $showDeleteAlert) {
                     Button("Cancel", role: .cancel) { }
                     Button("Delete", role: .destructive) {
-                        modelContext.delete(expense)
+                        modelContext.delete(tempExpense)
                         dismiss()
                     }
                 } message: {
@@ -56,17 +64,47 @@ struct EditExpenseView: View {
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button("Cancel") {
-                        dismiss()
+                        dismiss() // ✅ Discard changes
                     }
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Save") {
-                        try? modelContext.save()
-                        dismiss()
+                        if let amount = parseNumber(amountText) {
+                            tempExpense.amount = amount // ✅ Update amount correctly
+                            saveChanges()
+                        }
                     }
-                    .disabled(expense.title.isEmpty || expense.amount <= 0)
+                    .disabled(tempExpense.title.isEmpty || parseNumber(amountText) ?? 0 <= 0)
                 }
             }
+        }
+    }
+
+    /// ✅ **Correctly parse the number based on locale**
+    private func parseNumber(_ text: String) -> Double? {
+        let formatter = NumberFormatter()
+        formatter.locale = Locale.current // Use user locale
+        formatter.numberStyle = .decimal
+
+        return formatter.number(from: text)?.doubleValue
+    }
+
+    /// ✅ **Formats numbers correctly based on locale**
+    private func formatNumber(_ value: Double) -> String {
+        let formatter = NumberFormatter()
+        formatter.locale = Locale.current
+        formatter.numberStyle = .decimal
+        formatter.maximumFractionDigits = 2
+        return formatter.string(from: NSNumber(value: value)) ?? ""
+    }
+
+    /// ✅ **Only save when user taps "Save"**
+    private func saveChanges() {
+        do {
+            try modelContext.save() // ✅ Save only when explicitly called
+            dismiss() // Close the view
+        } catch {
+            print("Failed to save expense: \(error.localizedDescription)")
         }
     }
 }

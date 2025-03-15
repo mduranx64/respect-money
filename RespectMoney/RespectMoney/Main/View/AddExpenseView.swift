@@ -16,7 +16,7 @@ struct AddExpenseView: View {
     @Environment(\.dismiss) private var dismiss
     
     @State private var title: String = ""
-    @State private var amount: Double?
+    @State private var amount: String = ""
     @State private var date: Date = Date()
     @State private var showError: Bool = false
     
@@ -29,8 +29,9 @@ struct AddExpenseView: View {
                 TextField("Title", text: $title)
                     .textInputAutocapitalization(.sentences)
                 
-                TextField("Amount", value: $amount, format: .number)
+                TextField("Amount", text: $amount)
                     .keyboardType(.decimalPad)
+                    .numberInput($amount)
                 
                 Picker("Category", selection: $category) {
                     ForEach(categories, id: \.self) { category in
@@ -52,7 +53,7 @@ struct AddExpenseView: View {
                     Button("Save") {
                         addExpense()
                     }
-                    .disabled(title.isEmpty || (amount ?? 0).isZero || category.isEmpty)
+                    .disabled(title.isEmpty || amount.isEmpty || category.isEmpty)
                 }
             }
             .alert("Invalid Amount", isPresented: $showError) {
@@ -65,7 +66,7 @@ struct AddExpenseView: View {
     }
     
     private func addExpense() {
-        guard let amount, amount > 0 else {
+        guard let amount = Double(amount), amount > 0 else {
             showError = true
             return
         }
