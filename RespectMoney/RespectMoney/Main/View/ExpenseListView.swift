@@ -73,6 +73,7 @@ struct ExpenseListView: View {
                 }
             }
             .navigationTitle("Expenses")
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
@@ -97,18 +98,6 @@ struct ExpenseListView: View {
 }
 
 #Preview {
-    do {
-        let container = try ModelContainer(for: Expense.self, configurations: ModelConfiguration(isStoredInMemoryOnly: true))
-        let context = ModelContext(container)
-        
-        // Insert mock data
-        context.insert(Expense(title: "Groceries", amount: 45.99, category: "Food", date: Date()))
-        context.insert(Expense(title: "Uber Ride", amount: 12.50, category: "Transport", date: Date()))
-        context.insert(Expense(title: "Movie Ticket", amount: 15.00, category: "Entertainment", date: Date()))
-        
-        return ExpenseListView()
-            .modelContainer(container) // Attach model container
-    } catch {
-        return Text("Failed to create preview: \(error.localizedDescription)")
-    }
+    ExpenseListView()
+            .modelContainer(previewModelContainer)
 }

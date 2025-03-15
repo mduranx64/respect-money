@@ -21,24 +21,27 @@ struct AddExpenseView: View {
     @State private var showError: Bool = false
     
     let categories = ["Food", "Transport", "Shopping", "Entertainment", "Bills", "Other"]
+    @State private var labelText: String = ""
     
     var body: some View {
         NavigationStack {
             Form {
                 TextField("Title", text: $title)
+                    .textInputAutocapitalization(.sentences)
+                
                 TextField("Amount", value: $amount, format: .number)
                     .keyboardType(.decimalPad)
-                    .textInputAutocapitalization(.sentences)
                 
                 Picker("Category", selection: $category) {
                     ForEach(categories, id: \.self) { category in
                         Text(category).tag(category)
                     }
                 }
-    
+                
                 DatePicker("Date", selection: $date, displayedComponents: .date)
             }
             .navigationTitle("Add Expense")
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button("Cancel") {
@@ -74,11 +77,19 @@ struct AddExpenseView: View {
 }
 
 #Preview {
-    do {
-        let container = try ModelContainer(for: Expense.self, configurations: ModelConfiguration(isStoredInMemoryOnly: true))
-        return AddExpenseView()
-            .modelContainer(container)
-    } catch {
-        return Text("Failed to create preview: \(error.localizedDescription)")
+    AddExpenseView()
+        .modelContainer(previewModelContainer)
+    
+}
+
+struct LabelTextField: View {
+    var label: String
+    @Binding var text: String
+    var body: some View {
+        HStack {
+            Text(label)
+            Spacer()
+            TextField("", text: $text)
+        }
     }
 }

@@ -21,9 +21,10 @@ struct EditExpenseView: View {
         NavigationStack {
             Form {
                 TextField("Title", text: $expense.title)
+                    .textInputAutocapitalization(.sentences)
+                
                 TextField("Amount", value: $expense.amount, format: .number)
                     .keyboardType(.decimalPad)
-                    .textInputAutocapitalization(.sentences)
                 
                 Picker("Category", selection: $expense.category) {
                     ForEach(categories, id: \.self) { category in
@@ -71,18 +72,11 @@ struct EditExpenseView: View {
 }
 
 #Preview {
-    do {
-        let container = try ModelContainer(for: Expense.self, configurations: ModelConfiguration(isStoredInMemoryOnly: true))
+    let previewExpense = Expense(title: "Groceries", amount: 45.99, category: "Food", date: Date())
+    let context = ModelContext(previewModelContainer)
+    context.insert(previewExpense)
         
-        let previewExpense = Expense(title: "Groceries", amount: 45.99, category: "Food", date: Date())
-        
-        let context = ModelContext(container)
-        context.insert(previewExpense)
-        
-        return EditExpenseView(expense: previewExpense)
-            .modelContainer(container)
-    } catch {
-        return Text("Failed to create preview: \(error.localizedDescription)")
-    }
+    return EditExpenseView(expense: previewExpense)
+            .modelContainer(previewModelContainer)
 }
 
