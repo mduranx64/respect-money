@@ -41,7 +41,7 @@ struct ExpenseChartView: View {
                 let height = geometry.size.height
                 
                 VStack {
-                    Text("Total: \(formatCurrency(totalAmount))")
+                    Text("Total: \(totalAmount.formattedAsCurrency(currency))")
                         .font(.title2)
                         .bold()
                         .padding(.bottom, 10)
@@ -58,7 +58,7 @@ struct ExpenseChartView: View {
                                     Text("\(data.percentage, specifier: "%.1f")%") // ✅ Show percentage
                                         .font(.caption)
                                         .bold()
-                                    Text(formatCurrency(data.total)) // ✅ Show total amount
+                                    Text(data.total.formattedAsCurrency(currency)) // ✅ Show total amount
                                         .font(.caption)
                                 }
                             }
@@ -71,14 +71,6 @@ struct ExpenseChartView: View {
                 .navigationBarTitleDisplayMode(.inline)
             }
         }
-    }
-    
-    private func formatCurrency(_ amount: Double) -> String {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .currency
-        formatter.currencyCode = currency // Use selected currency
-        formatter.currencySymbol = formatter.currencySymbol?.appending(" ") // ✅ Add space after the symbol
-        return formatter.string(from: NSNumber(value: amount)) ?? "\(currency) \(amount)"
     }
 }
 

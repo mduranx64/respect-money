@@ -70,7 +70,7 @@ struct ExpenseListView: View {
                                                 .foregroundStyle(.secondary)
                                         }
                                         Spacer()
-                                        Text(formatCurrency(expense.amount))
+                                        Text(expense.amount.formattedAsCurrency(currency))
                                             .font(.headline)
                                             .foregroundStyle(.secondary)
                                     }
@@ -108,15 +108,6 @@ struct ExpenseListView: View {
         for index in offsets {
             modelContext.delete(expenses[index])
         }
-    }
-    
-    /// ✅ Format the amount using the selected currency (with space)
-    private func formatCurrency(_ amount: Double) -> String {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .currency
-        formatter.currencyCode = currency // Use selected currency
-        formatter.currencySymbol = formatter.currencySymbol?.appending(" ") // ✅ Add space after the symbol
-        return formatter.string(from: NSNumber(value: amount)) ?? "\(currency) \(amount)"
     }
 }
 
