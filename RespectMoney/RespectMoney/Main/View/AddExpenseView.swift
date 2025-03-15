@@ -11,6 +11,11 @@ import SwiftData
 struct AddExpenseView: View {
     @AppStorage("currency") private var currency: String = "USD"
     @AppStorage("defaultCategory") private var category: String = "Food"
+    @AppStorage("categories") private var categoriesString: String = ""
+
+    var categories: [String] {
+        categoriesString.components(separatedBy: ",").filter { !$0.isEmpty }
+    }
     
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
@@ -20,7 +25,6 @@ struct AddExpenseView: View {
     @State private var date: Date = Date()
     @State private var showError: Bool = false
     
-    let categories = ["Food", "Transport", "Shopping", "Entertainment", "Bills", "Other"]
     @State private var labelText: String = ""
     
     var body: some View {

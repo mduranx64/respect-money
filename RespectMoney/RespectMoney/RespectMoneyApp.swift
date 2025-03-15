@@ -10,6 +10,12 @@ import SwiftData
 
 @main
 struct RespectMoneyApp: App {
+    
+    
+    init () {
+        setupDefaultData()
+    }
+
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             Expense.self,
@@ -28,5 +34,13 @@ struct RespectMoneyApp: App {
             MainTabView()
         }
         .modelContainer(sharedModelContainer)
+    }
+    
+    private func setupDefaultData() {
+        let defaultCategories = "Food,Transport,Shopping,Entertainment,Bills,Other"
+        // ✅ Set default categories only on first launch
+        if UserDefaults.standard.string(forKey: "categories") == nil {
+            UserDefaults.standard.set(defaultCategories, forKey: "categories")
+        }
     }
 }

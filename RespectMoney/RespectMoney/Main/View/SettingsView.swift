@@ -33,6 +33,11 @@ struct SettingsView: View {
                         }
                     }
                 }
+                Section {
+                    NavigationLink("Categories") {
+                        CategoriesView()
+                    }
+                }
                 
                 Section {
                     Button("Delete all data") {
@@ -49,6 +54,8 @@ struct SettingsView: View {
                 } message: {
                     Text("Are you sure you want to delete all expenses? This action cannot be undone.")
                 }
+                
+                
             }
             .navigationTitle("Settings")
             .navigationBarTitleDisplayMode(.inline)

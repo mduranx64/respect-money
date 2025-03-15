@@ -36,7 +36,7 @@ struct ExpenseChartView: View {
                     .frame(height: height * 0.8)
                 }
                 .padding()
-                .navigationTitle("Expenses Breakdown")
+                .navigationTitle("Expenses Creakdown")
                 .navigationBarTitleDisplayMode(.inline)
             }
         }

@@ -24,9 +24,13 @@ struct EditExpenseView: View {
 
     @State private var editModel: ExpenseEditModel // Temporary local copy
     @State private var showDeleteAlert: Bool = false
+    @AppStorage("categories") private var categoriesString: String = ""
+
+    var categories: [String] {
+        categoriesString.components(separatedBy: ",").filter { !$0.isEmpty }
+    }
 
     let expense: Expense
-    let categories = ["Food", "Transport", "Shopping", "Entertainment", "Bills", "Other"]
 
     init(expense: Expense) {
         self.expense = expense
