@@ -18,7 +18,13 @@ struct ExpenseListView: View {
     @State private var showAddExpense: Bool = false
     @AppStorage("currency") private var currency: String = "USD" // Default to USD if no value exists
     
-    let categories = ["All", "Food", "Transport", "Shopping", "Entertainment", "Bills", "Other"]
+    @AppStorage("categories") private var categoriesString: String = ""
+    
+    var categories: [String] {
+        var list = categoriesString.components(separatedBy: ",").filter { !$0.isEmpty }
+        list.insert("All", at: 0)
+        return list
+    }
     
     var filteredExpenses: [Expense] {
         expenses.filter { expense in
@@ -27,47 +33,54 @@ struct ExpenseListView: View {
         }
     }
     
+    var groupedExpenses: [String: [Expense]] {
+        Dictionary(grouping: filteredExpenses, by: { $0.category })
+    }
+    
     var body: some View {
         NavigationStack {
             VStack {
                 
                 HStack {
-                    Picker("Category😱", selection: $selectedCategory) {
+                    Picker("Category", selection: $selectedCategory) {
                         ForEach(categories, id: \.self) { category in
                             Text(category).tag(category)
                         }
                     }
                     .pickerStyle(.menu)
                     
-                    DatePicker("", selection: $selectedDate, displayedComponents: .date)
+                    DatePicker("Fecha", selection: $selectedDate, displayedComponents: .date)
                         .labelsHidden()
                 }
                 
                 List {
-                    ForEach(filteredExpenses) { expense in
-                        Button {
-                            selectedExpense = expense
-                        } label: {
-                            HStack {
-                                VStack(alignment: .leading) {
-                                    Text(expense.title)
-                                        .font(.headline)
-                                        .foregroundStyle(.secondary)
-                                    Text(expense.category)
-                                        .font(.subheadline)
-                                        .foregroundStyle(.secondary)
+                    ForEach(groupedExpenses.keys.sorted(), id: \.self) { category in
+                        Section(header: Text(category).font(.headline)) {
+                            ForEach(groupedExpenses[category] ?? []) { expense in
+                                Button {
+                                    selectedExpense = expense
+                                } label: {
+                                    HStack {
+                                        VStack(alignment: .leading) {
+                                            Text(expense.title)
+                                                .font(.headline)
+                                                .foregroundStyle(.secondary)
+                                            Text(expense.category)
+                                                .font(.subheadline)
+                                                .foregroundStyle(.secondary)
+                                        }
+                                        Spacer()
+                                        Text(formatCurrency(expense.amount))
+                                            .font(.headline)
+                                            .foregroundStyle(.secondary)
+                                    }
+                                    .contentShape(Rectangle())
                                 }
-                                Spacer()
-                                // ✅ Use currency formatter
-                                Text(formatCurrency(expense.amount))
-                                    .font(.headline)
-                                    .foregroundStyle(.secondary)
+                                .buttonStyle(.plain)
                             }
-                            .contentShape(Rectangle())
+                            .onDelete(perform: deleteExpense)
                         }
-                        .buttonStyle(.plain)
                     }
-                    .onDelete(perform: deleteExpense)
                 }
                 .sheet(item: $selectedExpense) { expense in
                     EditExpenseView(expense: expense)
@@ -109,5 +122,5 @@ struct ExpenseListView: View {
 
 #Preview {
     ExpenseListView()
-            .modelContainer(previewModelContainer)
+        .modelContainer(previewModelContainer)
 }

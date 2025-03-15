@@ -48,16 +48,19 @@ struct EditExpenseView: View {
                 TextField("Title", text: $editModel.title)
                     .textInputAutocapitalization(.sentences)
                     .autocorrectionDisabled(true)
+                    .font(.headline)
                 
                 // ✅ Use a separate model to prevent auto-saving
                 TextField("Amount", text: $editModel.amount)
                     .numberInput($editModel.amount)
+                    .font(.largeTitle)
                 
                 Picker("Category", selection: $editModel.category) {
                     ForEach(categories, id: \.self) { category in
                         Text(category)
                     }
                 }
+                .pickerStyle(.wheel)
                 
                 DatePicker("Date", selection: $editModel.date, displayedComponents: .date)
                 

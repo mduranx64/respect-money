@@ -33,16 +33,19 @@ struct AddExpenseView: View {
                 TextField("Title", text: $title)
                     .textInputAutocapitalization(.sentences)
                     .autocorrectionDisabled(true)
+                    .font(.headline)
                 
                 TextField("Amount", text: $amount)
                     .keyboardType(.decimalPad)
                     .numberInput($amount)
+                    .font(.largeTitle)
                 
                 Picker("Category", selection: $category) {
                     ForEach(categories, id: \.self) { category in
                         Text(category).tag(category)
                     }
                 }
+                .pickerStyle(.wheel)
                 
                 DatePicker("Date", selection: $date, displayedComponents: .date)
             }
@@ -58,7 +61,7 @@ struct AddExpenseView: View {
                     Button("Save") {
                         addExpense()
                     }
-                    .disabled(title.isEmpty || amount.isEmpty || category.isEmpty)
+                    .disabled(amount.isEmpty || category.isEmpty)
                 }
             }
             .alert("Invalid Amount", isPresented: $showError) {
