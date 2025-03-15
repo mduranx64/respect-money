@@ -28,6 +28,7 @@ struct AddExpenseView: View {
             Form {
                 TextField("Title", text: $title)
                     .textInputAutocapitalization(.sentences)
+                    .autocorrectionDisabled(true)
                 
                 TextField("Amount", text: $amount)
                     .keyboardType(.decimalPad)

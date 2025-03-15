@@ -8,40 +8,54 @@
 import SwiftUI
 import SwiftData
 
+import SwiftUI
+
+/// ✅ A separate model for editing (prevents unwanted auto-saves)
+struct ExpenseEditModel {
+    var title: String
+    var amount: String
+    var category: String
+    var date: Date
+}
+
 struct EditExpenseView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
 
-    @State private var tempExpense: Expense
+    @State private var editModel: ExpenseEditModel // Temporary local copy
     @State private var showDeleteAlert: Bool = false
-    @State private var amountText: String = "" // Temporary variable
 
+    let expense: Expense
     let categories = ["Food", "Transport", "Shopping", "Entertainment", "Bills", "Other"]
 
     init(expense: Expense) {
-        _tempExpense = State(initialValue: expense) // Create a local copy of the expense
+        self.expense = expense
+        _editModel = State(initialValue: ExpenseEditModel(
+            title: expense.title,
+            amount: EditExpenseView.formatNumber(expense.amount), // ✅ Use formatter for accurate display
+            category: expense.category,
+            date: expense.date
+        ))
     }
 
     var body: some View {
         NavigationStack {
             Form {
-                TextField("Title", text: $tempExpense.title)
+                TextField("Title", text: $editModel.title)
                     .textInputAutocapitalization(.sentences)
+                    .autocorrectionDisabled(true)
 
-                // ✅ Use a temporary variable for amount
-                TextField("Amount", text: $amountText)
-                    .numberInput($amountText) // Apply validation
-                    .onAppear {
-                        amountText = formatNumber(tempExpense.amount) // Load formatted value
-                    }
+                // ✅ Use a separate model to prevent auto-saving
+                TextField("Amount", text: $editModel.amount)
+                    .numberInput($editModel.amount)
 
-                Picker("Category", selection: $tempExpense.category) {
+                Picker("Category", selection: $editModel.category) {
                     ForEach(categories, id: \.self) { category in
                         Text(category)
                     }
                 }
 
-                DatePicker("Date", selection: $tempExpense.date, displayedComponents: .date)
+                DatePicker("Date", selection: $editModel.date, displayedComponents: .date)
 
                 Section {
                     Button("Delete") {
@@ -53,7 +67,7 @@ struct EditExpenseView: View {
                 .alert("Delete Expense?", isPresented: $showDeleteAlert) {
                     Button("Cancel", role: .cancel) { }
                     Button("Delete", role: .destructive) {
-                        modelContext.delete(tempExpense)
+                        modelContext.delete(expense)
                         dismiss()
                     }
                 } message: {
@@ -64,48 +78,54 @@ struct EditExpenseView: View {
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button("Cancel") {
-                        dismiss() // ✅ Discard changes
+                        dismiss() // ✅ Discard all changes
                     }
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Save") {
-                        if let amount = parseNumber(amountText) {
-                            tempExpense.amount = amount // ✅ Update amount correctly
-                            saveChanges()
+                        if let amount = parseNumber(editModel.amount) {
+                            editModel.amount = EditExpenseView.formatNumber(amount) // ✅ Ensure correct formatting
+                            saveChanges(amount: amount)
                         }
                     }
-                    .disabled(tempExpense.title.isEmpty || parseNumber(amountText) ?? 0 <= 0)
+                    .disabled(editModel.title.isEmpty || parseNumber(editModel.amount) ?? 0 <= 0)
                 }
             }
         }
     }
 
-    /// ✅ **Correctly parse the number based on locale**
-    private func parseNumber(_ text: String) -> Double? {
-        let formatter = NumberFormatter()
-        formatter.locale = Locale.current // Use user locale
-        formatter.numberStyle = .decimal
-
-        return formatter.number(from: text)?.doubleValue
-    }
-
-    /// ✅ **Formats numbers correctly based on locale**
-    private func formatNumber(_ value: Double) -> String {
-        let formatter = NumberFormatter()
-        formatter.locale = Locale.current
-        formatter.numberStyle = .decimal
-        formatter.maximumFractionDigits = 2
-        return formatter.string(from: NSNumber(value: value)) ?? ""
-    }
-
-    /// ✅ **Only save when user taps "Save"**
-    private func saveChanges() {
+    /// ✅ **Save only when user taps "Save"**
+    private func saveChanges(amount: Double) {
         do {
-            try modelContext.save() // ✅ Save only when explicitly called
+            expense.title = editModel.title
+            expense.amount = amount // ✅ Store correctly rounded value
+            expense.category = editModel.category
+            expense.date = editModel.date
+
+            try modelContext.save() // ✅ Save only explicitly
             dismiss() // Close the view
         } catch {
             print("Failed to save expense: \(error.localizedDescription)")
         }
+    }
+
+    /// ✅ **Correctly parse numbers based on locale**
+    private func parseNumber(_ text: String) -> Double? {
+        let formatter = NumberFormatter()
+        formatter.locale = Locale.current
+        formatter.numberStyle = .decimal
+        formatter.maximumFractionDigits = 2 // ✅ Ensures correct decimal precision
+        return formatter.number(from: text)?.doubleValue
+    }
+
+    /// ✅ **Formats numbers correctly based on locale**
+    private static func formatNumber(_ value: Double) -> String {
+        let formatter = NumberFormatter()
+        formatter.locale = Locale.current
+        formatter.numberStyle = .decimal
+        formatter.maximumFractionDigits = 2 // ✅ Round to 2 decimal places
+        formatter.minimumFractionDigits = 2 // ✅ Always show 2 decimal places
+        return formatter.string(from: NSNumber(value: value)) ?? ""
     }
 }
 
