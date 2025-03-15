@@ -16,6 +16,7 @@ struct ExpenseListView: View {
     @State private var selectedDate: Date = Date()
     @State private var selectedExpense: Expense?
     @State private var showAddExpense: Bool = false
+    @AppStorage("currency") private var currency: String = "USD" // Default to USD if no value exists
     
     let categories = ["All", "Food", "Transport", "Shopping", "Entertainment", "Bills", "Other"]
     
@@ -41,7 +42,6 @@ struct ExpenseListView: View {
                     DatePicker("", selection: $selectedDate, displayedComponents: .date)
                         .labelsHidden()
                 }
-                .padding()
                 
                 List {
                     ForEach(filteredExpenses) { expense in
@@ -58,7 +58,8 @@ struct ExpenseListView: View {
                                         .foregroundStyle(.secondary)
                                 }
                                 Spacer()
-                                Text("$\(expense.amount, specifier: "%.2f")")
+                                // ✅ Use currency formatter
+                                Text(formatCurrency(expense.amount))
                                     .font(.headline)
                                     .foregroundStyle(.secondary)
                             }
@@ -94,6 +95,15 @@ struct ExpenseListView: View {
         for index in offsets {
             modelContext.delete(expenses[index])
         }
+    }
+    
+    /// ✅ Format the amount using the selected currency (with space)
+    private func formatCurrency(_ amount: Double) -> String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .currency
+        formatter.currencyCode = currency // Use selected currency
+        formatter.currencySymbol = formatter.currencySymbol?.appending(" ") // ✅ Add space after the symbol
+        return formatter.string(from: NSNumber(value: amount)) ?? "\(currency) \(amount)"
     }
 }
 
