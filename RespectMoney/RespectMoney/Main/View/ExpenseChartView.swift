@@ -45,26 +45,27 @@ struct ExpenseChartView: View {
                         .font(.title2)
                         .bold()
                         .padding(.bottom, 10)
-                    
-                    Chart {
-                        ForEach(groupedExpenses, id: \.category) { data in
-                            BarMark(
-                                x: .value("Category", data.category),
-                                y: .value("Total", data.total)
-                            )
-                            .foregroundStyle(by: .value("Category", data.category))
-                            .annotation(position: .top) {
-                                VStack {
-                                    Text("\(data.percentage, specifier: "%.1f")%") // ✅ Show percentage
-                                        .font(.caption)
-                                        .bold()
-                                    Text(data.total.formattedAsCurrency(currency)) // ✅ Show total amount
-                                        .font(.caption)
+                    ScrollView(.horizontal) {
+                        Chart {
+                            ForEach(groupedExpenses, id: \.category) { data in
+                                BarMark(
+                                    x: .value("Category", data.category),
+                                    y: .value("Total", data.total)
+                                )
+                                .foregroundStyle(by: .value("Category", data.category))
+                                .annotation(position: .top) {
+                                    VStack {
+                                        Text("\(data.percentage, specifier: "%.1f")%") // ✅ Show percentage
+                                            .font(.caption)
+                                            .bold()
+                                        Text(data.total.formattedAsCurrency(currency)) // ✅ Show total amount
+                                            .font(.caption)
+                                    }
                                 }
                             }
                         }
+                        .frame(minWidth: max(geometry.size.width, CGFloat(groupedExpenses.count) * 60))
                     }
-                    .frame(height: height * 0.8)
                 }
                 .padding()
                 .navigationTitle("Expense Breakdown")
