@@ -16,7 +16,7 @@ struct AddExpenseView: View {
     @Environment(\.dismiss) private var dismiss
     
     @State private var title: String = ""
-    @State private var amountText: String = ""
+    @State private var amount: Double?
     @State private var date: Date = Date()
     @State private var showError: Bool = false
     
@@ -26,22 +26,8 @@ struct AddExpenseView: View {
         NavigationStack {
             Form {
                 TextField("Title", text: $title)
-                TextField("Amount", text: $amountText)
+                TextField("Amount", value: $amount, format: .number)
                     .keyboardType(.decimalPad)
-                    .onChange(of: amountText) { oldValue, newValue in
-                        if newValue.isEmpty {
-                            return
-                        } else {
-                            let decimalCount = amountText.filter { $0 == "." }.count
-                            if decimalCount > 1 {
-                                amountText.removeLast()
-                            }
-                            
-                            if amountText == "." {
-                                amountText = ""
-                            }
-                        }
-                    }
                 
                 Picker("Category", selection: $category) {
                     ForEach(categories, id: \.self) { category in
@@ -62,7 +48,7 @@ struct AddExpenseView: View {
                     Button("Save") {
                         addExpense()
                     }
-                    .disabled(title.isEmpty || amountText.isEmpty || category.isEmpty)
+                    .disabled(title.isEmpty || (amount ?? 0).isZero || category.isEmpty)
                 }
             }
             .alert("Invalid Amount", isPresented: $showError) {
@@ -74,7 +60,7 @@ struct AddExpenseView: View {
     }
     
     private func addExpense() {
-        guard let amount = Double(amountText), amount > 0 else {
+        guard let amount, amount > 0 else {
             showError = true
             return
         }
