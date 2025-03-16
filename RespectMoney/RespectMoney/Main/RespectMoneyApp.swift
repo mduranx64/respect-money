@@ -8,6 +8,13 @@
 import SwiftUI
 import SwiftData
 
+enum TransactionType: String, CaseIterable {
+    case expense = "Expense"
+    case income = "Income"
+}
+
+let transactionTypes = TransactionType.allCases.map(\.rawValue)
+
 @main
 struct RespectMoneyApp: App {
     
@@ -18,7 +25,7 @@ struct RespectMoneyApp: App {
 
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
-            Expense.self,
+            Transaction.self,
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 
@@ -38,14 +45,17 @@ struct RespectMoneyApp: App {
     
     private func setupDefaultData() {
         
-        let defaultCategories = "Food,Transport,Shopping,Entertainment,Bills,Other"
+        let defaultExpenseCategories = "Food,Transport,Shopping,Entertainment,Bills,Other"
+        let defaultIncomeCategories = "Salary,Other"
         
-        // ✅ Set default categories only on first launch
-        if UserDefaults.standard.string(forKey: "categories") == nil {
-            UserDefaults.standard.set(defaultCategories, forKey: "categories")
+        if UserDefaults.standard.string(forKey: "expenseCategories") == nil {
+            UserDefaults.standard.set(defaultExpenseCategories, forKey: "expenseCategories")
         }
         
-        // ✅ Detect and set the local currency if not already set
+        if UserDefaults.standard.string(forKey: "incomeCategories") == nil {
+            UserDefaults.standard.set(defaultIncomeCategories, forKey: "incomeCategories")
+        }
+        
         if UserDefaults.standard.string(forKey: "currency") == nil {
             let localCurrency = Locale.current.currency?.identifier ?? "USD" // Get system currency, fallback to USD
             UserDefaults.standard.set(localCurrency, forKey: "currency")

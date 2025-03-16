@@ -44,8 +44,12 @@ struct SettingsView: View {
                     }
                 }
                 Section {
-                    NavigationLink("Categories") {
-                        CategoriesView()
+                    NavigationLink("Expense Categories") {
+                        ExpenseCategoriesView()
+                    }
+                    
+                    NavigationLink("Income Categories") {
+                        IncomeCategoriesView()
                     }
                 }
                 
@@ -74,7 +78,7 @@ struct SettingsView: View {
     
     private func deleteAllExpenses() {
         do {
-            let fetchDescriptor = FetchDescriptor<Expense>() // Fetch all expenses
+            let fetchDescriptor = FetchDescriptor<Transaction>() // Fetch all expenses
             let allExpenses = try modelContext.fetch(fetchDescriptor)
 
             for expense in allExpenses {

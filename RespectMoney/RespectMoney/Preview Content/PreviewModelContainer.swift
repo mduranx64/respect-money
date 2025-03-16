@@ -12,14 +12,14 @@ import SwiftData
 let previewModelContainer: ModelContainer = {
     do {
         // Create an in-memory SwiftData container
-        let container = try ModelContainer(for: Expense.self, configurations: ModelConfiguration(isStoredInMemoryOnly: true))
+        let container = try ModelContainer(for: Transaction.self, configurations: ModelConfiguration(isStoredInMemoryOnly: true))
 
-        // Insert mock expenses
+        // Insert mock transactions
         let context = ModelContext(container)
-        context.insert(Expense(title: "Groceries", amount: 50.0, category: "Food", date: Date()))
-        context.insert(Expense(title: "Uber", amount: 20.0, category: "Transport", date: Date()))
-        context.insert(Expense(title: "Movies", amount: 15.0, category: "Entertainment", date: Date()))
-        context.insert(Expense(title: "Coffee", amount: 5.0, category: "Food", date: Date()))
+        context.insert(Transaction(title: "Groceries", amount: 50.0, category: "Food", date: Date(), type: TransactionType.expense.rawValue))
+        context.insert(Transaction(title: "Uber", amount: 20.0, category: "Transport", date: Date(), type: TransactionType.expense.rawValue))
+                       context.insert(Transaction(title: "Movies", amount: 15.0, category: "Entertainment", date: Date(), type: TransactionType.expense.rawValue))
+        context.insert(Transaction(title: "Coffee", amount: 5.0, category: "Food", date: Date(), type: TransactionType.expense.rawValue))
 
         return container
     } catch {

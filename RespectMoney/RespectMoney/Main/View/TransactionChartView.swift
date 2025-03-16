@@ -1,5 +1,5 @@
 //
-//  ExpenseChartView.swift
+//  TransactionChartView.swift
 //  RespectMoney
 //
 //  Created by Miguel Duran on 14-03-25.
@@ -13,15 +13,15 @@ import SwiftUI
 import Charts
 import SwiftData
 
-struct ExpenseChartView: View {
-    @Query private var expenses: [Expense]
+struct TransactionChartView: View {
+    @Query private var transaction: [Transaction]
     @AppStorage("currency") private var currency: String = "USD"
     
-    /// ✅ Group expenses by category and calculate total per category
-    var groupedExpenses: [(category: String, total: Double, percentage: Double)] {
-        let totalAmount = expenses.reduce(0) { $0 + $1.amount }
+    /// ✅ Group transaction by category and calculate total per category
+    var groupedTransactions: [(category: String, total: Double, percentage: Double)] {
+        let totalAmount = transaction.reduce(0) { $0 + $1.amount }
         
-        return Dictionary(grouping: expenses, by: { $0.category })
+        return Dictionary(grouping: transaction, by: { $0.category })
             .mapValues { $0.reduce(0) { $0 + $1.amount } }
             .map { category, total in
                 let percentage = totalAmount > 0 ? (total / totalAmount) * 100 : 0
@@ -32,13 +32,12 @@ struct ExpenseChartView: View {
     
     /// ✅ Compute total expense amount
     var totalAmount: Double {
-        expenses.reduce(0) { $0 + $1.amount }
+        transaction.reduce(0) { $0 + $1.amount }
     }
     
     var body: some View {
         NavigationStack {
             GeometryReader { geometry in
-                let height = geometry.size.height
                 
                 VStack {
                     Text("Total: \(totalAmount.formattedAsCurrency(currency))")
@@ -47,7 +46,7 @@ struct ExpenseChartView: View {
                         .padding(.bottom, 10)
                     ScrollView(.horizontal) {
                         Chart {
-                            ForEach(groupedExpenses, id: \.category) { data in
+                            ForEach(groupedTransactions, id: \.category) { data in
                                 BarMark(
                                     x: .value("Category", data.category),
                                     y: .value("Total", data.total)
@@ -64,11 +63,11 @@ struct ExpenseChartView: View {
                                 }
                             }
                         }
-                        .frame(minWidth: max(geometry.size.width, CGFloat(groupedExpenses.count) * 60))
+                        .frame(minWidth: max(geometry.size.width, CGFloat(groupedTransactions.count) * 60))
                     }
                 }
                 .padding()
-                .navigationTitle("Expense Breakdown")
+                .navigationTitle("Expenses Breakdown")
                 .navigationBarTitleDisplayMode(.inline)
             }
         }
@@ -76,6 +75,6 @@ struct ExpenseChartView: View {
 }
 
 #Preview {
-    ExpenseChartView()
+    TransactionChartView()
         .modelContainer(previewModelContainer)
 }

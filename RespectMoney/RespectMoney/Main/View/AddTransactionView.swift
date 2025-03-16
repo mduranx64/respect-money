@@ -1,5 +1,5 @@
 //
-//  AddExpenseView.swift
+//  AddTransactionView.swift
 //  RespectMoney
 //
 //  Created by Miguel Duran on 14-03-25.
@@ -8,13 +8,17 @@
 import SwiftUI
 import SwiftData
 
-struct AddExpenseView: View {
+struct AddTransactionView: View {
     @AppStorage("currency") private var currency: String = "USD"
     @AppStorage("defaultCategory") private var category: String = "Food"
-    @AppStorage("categories") private var categoriesString: String = ""
+    @AppStorage("expenseCategories") private var expenseCategoriesString: String = ""
+    @AppStorage("incomeCategories") private var incomeCategoriesString: String = ""
     
-    var categories: [String] {
-        categoriesString.components(separatedBy: ",").filter { !$0.isEmpty }
+    var expenseCategories: [String] {
+        expenseCategoriesString.components(separatedBy: ",").filter { !$0.isEmpty }
+    }
+    var incomeCategories: [String] {
+        incomeCategoriesString.components(separatedBy: ",").filter { !$0.isEmpty }
     }
     
     @Environment(\.modelContext) private var modelContext
@@ -24,12 +28,19 @@ struct AddExpenseView: View {
     @State private var amount: String = ""
     @State private var date: Date = Date()
     @State private var showError: Bool = false
-    
+    @State private var transactionType: String = TransactionType.expense.rawValue
     @State private var labelText: String = ""
     
     var body: some View {
         NavigationStack {
             Form {
+                Picker("Type", selection: $transactionType) {
+                    ForEach(transactionTypes, id: \.self) { type in
+                        Text(type).tag(type)
+                    }
+                }
+                .pickerStyle(.segmented)
+                
                 TextField("Title", text: $title)
                     .textInputAutocapitalization(.sentences)
                     .autocorrectionDisabled(true)
@@ -40,12 +51,22 @@ struct AddExpenseView: View {
                     .numberInput($amount)
                     .font(.largeTitle)
                 
-                Picker("Category", selection: $category) {
-                    ForEach(categories, id: \.self) { category in
-                        Text(category).tag(category)
+                if transactionType == TransactionType.expense.rawValue {
+                    Picker("Expense Category", selection: $category) {
+                        ForEach(expenseCategories, id: \.self) { category in
+                            Text(category).tag(category)
+                        }
                     }
+                    .pickerStyle(.wheel)
+                } else {
+                    
+                    Picker("Income Category", selection: $category) {
+                        ForEach(incomeCategories, id: \.self) { category in
+                            Text(category).tag(category)
+                        }
+                    }
+                    .pickerStyle(.wheel)
                 }
-                .pickerStyle(.wheel)
                 
                 DatePicker("Date", selection: $date, displayedComponents: .date)
             }
@@ -59,7 +80,7 @@ struct AddExpenseView: View {
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Save") {
-                        addExpense()
+                        addTransaction()
                     }
                     .disabled(amount.isEmpty || category.isEmpty)
                 }
@@ -73,20 +94,20 @@ struct AddExpenseView: View {
         }
     }
     
-    private func addExpense() {
+    private func addTransaction() {
         guard let amount = Double(amount), amount > 0 else {
             showError = true
             return
         }
         
-        let newExpense = Expense(title: title, amount: amount, category: category, date: date)
-        modelContext.insert(newExpense)
+        let newTransaction = Transaction(title: title, amount: amount, category: category, date: date, type: transactionType)
+        modelContext.insert(newTransaction)
         dismiss()
     }
 }
 
 #Preview {
-    AddExpenseView()
+    AddTransactionView()
         .modelContainer(previewModelContainer)
     
 }

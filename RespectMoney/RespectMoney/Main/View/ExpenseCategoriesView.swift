@@ -1,5 +1,5 @@
 //
-//  CategoriesView.swift
+//  ExpenseCategoriesView.swift
 //  RespectMoney
 //
 //  Created by Miguel Duran on 15-03-25.
@@ -7,8 +7,8 @@
 
 import SwiftUI
 
-struct CategoriesView: View {
-    @AppStorage("categories") private var categories: String = "" // Store categories as CSV
+struct ExpenseCategoriesView: View {
+    @AppStorage("expenseCategories") private var categories: String = "" // Store categories as CSV
     @State private var newCategory: String = "" // New category input
     
     var categoryList: [String] {
@@ -66,5 +66,5 @@ struct CategoriesView: View {
 }
 
 #Preview {
-    CategoriesView()
+    ExpenseCategoriesView()
 }

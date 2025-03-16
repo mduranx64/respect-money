@@ -1,5 +1,5 @@
 //
-//  EditExpenseView.swift
+//  EditTransactionView.swift
 //  RespectMoney
 //
 //  Created by Miguel Duran on 14-03-25.
@@ -11,18 +11,19 @@ import SwiftData
 import SwiftUI
 
 /// ✅ A separate model for editing (prevents unwanted auto-saves)
-struct ExpenseEditModel {
+struct TransactionEditModel {
     var title: String
     var amount: String
     var category: String
     var date: Date
+    var type: String
 }
 
-struct EditExpenseView: View {
+struct EditTransactionView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
     
-    @State private var editModel: ExpenseEditModel // Temporary local copy
+    @State private var editModel: TransactionEditModel // Temporary local copy
     @State private var showDeleteAlert: Bool = false
     @AppStorage("categories") private var categoriesString: String = ""
     
@@ -30,15 +31,16 @@ struct EditExpenseView: View {
         categoriesString.components(separatedBy: ",").filter { !$0.isEmpty }
     }
     
-    let expense: Expense
+    let transaction: Transaction
     
-    init(expense: Expense) {
-        self.expense = expense
-        _editModel = State(initialValue: ExpenseEditModel(
-            title: expense.title,
-            amount: EditExpenseView.formatNumber(expense.amount), // ✅ Use formatter for accurate display
-            category: expense.category,
-            date: expense.date
+    init(transaction: Transaction) {
+        self.transaction = transaction
+        _editModel = State(initialValue: TransactionEditModel(
+            title: transaction.title,
+            amount: EditTransactionView.formatNumber(transaction.amount), // ✅ Use formatter for accurate display
+            category: transaction.category,
+            date: transaction.date,
+            type: transaction.type
         ))
     }
     
@@ -71,17 +73,17 @@ struct EditExpenseView: View {
                     .foregroundStyle(.red)
                     .frame(maxWidth: .infinity)
                 }
-                .alert("Delete Expense?", isPresented: $showDeleteAlert) {
+                .alert("Delete Transaction?", isPresented: $showDeleteAlert) {
                     Button("Cancel", role: .cancel) { }
                     Button("Delete", role: .destructive) {
-                        modelContext.delete(expense)
+                        modelContext.delete(transaction)
                         dismiss()
                     }
                 } message: {
-                    Text("Are you sure you want to delete this expense? This action cannot be undone.")
+                    Text("Are you sure you want to delete this transaction? This action cannot be undone.")
                 }
             }
-            .navigationTitle("Edit Expense")
+            .navigationTitle("Edit Transaction")
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button("Cancel") {
@@ -91,7 +93,7 @@ struct EditExpenseView: View {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Save") {
                         if let amount = parseNumber(editModel.amount) {
-                            editModel.amount = EditExpenseView.formatNumber(amount) // ✅ Ensure correct formatting
+                            editModel.amount = EditTransactionView.formatNumber(amount) // ✅ Ensure correct formatting
                             saveChanges(amount: amount)
                         }
                     }
@@ -105,15 +107,15 @@ struct EditExpenseView: View {
     /// ✅ **Save only when user taps "Save"**
     private func saveChanges(amount: Double) {
         do {
-            expense.title = editModel.title
-            expense.amount = amount // ✅ Store correctly rounded value
-            expense.category = editModel.category
-            expense.date = editModel.date
+            transaction.title = editModel.title
+            transaction.amount = amount // ✅ Store correctly rounded value
+            transaction.category = editModel.category
+            transaction.date = editModel.date
             
             try modelContext.save() // ✅ Save only explicitly
             dismiss() // Close the view
         } catch {
-            print("Failed to save expense: \(error.localizedDescription)")
+            print("Failed to save transaction: \(error.localizedDescription)")
         }
     }
     
@@ -138,11 +140,11 @@ struct EditExpenseView: View {
 }
 
 #Preview {
-    let previewExpense = Expense(title: "Groceries", amount: 45.99, category: "Food", date: Date())
+    let previewTransaction = Transaction(title: "Groceries", amount: 45.99, category: "Food", date: Date(), type: TransactionType.expense.rawValue)
     let context = ModelContext(previewModelContainer)
-    context.insert(previewExpense)
+    context.insert(previewTransaction)
     
-    return EditExpenseView(expense: previewExpense)
+    return EditTransactionView(transaction: previewTransaction)
         .modelContainer(previewModelContainer)
 }
 

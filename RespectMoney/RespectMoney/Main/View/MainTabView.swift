@@ -10,12 +10,12 @@ import SwiftUI
 struct MainTabView: View {
     var body: some View {
         TabView {
-            ExpenseListView()
+            TransactionListView()
                 .tabItem {
                     Label("Expenses", systemImage: "list.bullet")
                 }
             
-            ExpenseChartView()
+            TransactionChartView()
                 .tabItem {
                     Label("Insights", systemImage: "chart.bar.fill")
                 }
