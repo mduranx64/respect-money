@@ -56,11 +56,12 @@ struct TransactionListView: View {
     
     /// ✅ Filter transaction by selected month and category
     var filteredTransactions: [Transaction] {
-        let calendar = Calendar.current
-        return transactions.filter { transaction in
-            let isSameMonth = calendar.isDate(transaction.date, equalTo: selectedMonth, toGranularity: .month)
-            return isSameMonth && (selectedExpenseCategory == "All" || transaction.category == selectedExpenseCategory) && (transactionType == "All" || transaction.type == transactionType)
-        }
+        transactions.filter { transaction in
+                let isSameMonth = Calendar.current.isDate(transaction.date, equalTo: selectedMonth, toGranularity: .month)
+                let matchesCategory = selectedExpenseCategory == "All" || transaction.category == selectedExpenseCategory
+                let matchesType = transactionType == "All" || transaction.type == transactionType // ✅ Filter by type
+                return isSameMonth && matchesCategory && matchesType
+            }
     }
     
     var groupedTransactions: [String: [Transaction]] {
@@ -70,10 +71,11 @@ struct TransactionListView: View {
     var body: some View {
         NavigationStack {
             VStack {
-                HStack {
+                HStack(spacing: 0) {
                     Picker("Transaction Type", selection: $transactionType) {
                         ForEach(transactionsTypesWithAll, id: \.self) { transactionType in
                             Text(transactionType).tag(transactionType)
+                                
                         }
                     }
                     .pickerStyle(.menu)
@@ -92,6 +94,7 @@ struct TransactionListView: View {
                     }
                     .pickerStyle(.menu)
                 }
+                .frame(maxWidth: .infinity, alignment: .center)
                 
                 List {
                     ForEach(groupedTransactions.keys.sorted(), id: \.self) { category in

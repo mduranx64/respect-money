@@ -12,7 +12,7 @@ struct SettingsView: View {
     @AppStorage("currency") private var currency: String = "USD"
     @AppStorage("defaultCategory") private var defaultCategory: String = "Food"
     @Environment(\.modelContext) private var modelContext
-    @AppStorage("categories") private var categoriesString: String = ""
+    @AppStorage("expenseCategories") private var categoriesString: String = ""
     
     var categories: [String] {
         categoriesString.components(separatedBy: ",").filter { !$0.isEmpty } // Convert CSV to array
