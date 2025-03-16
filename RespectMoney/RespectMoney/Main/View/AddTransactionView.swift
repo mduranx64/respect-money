@@ -13,7 +13,6 @@ struct AddTransactionView: View {
     @AppStorage("defaultCategory") private var category: String = "Food"
     @AppStorage("expenseCategories") private var expenseCategoriesString: String = ""
     @AppStorage("incomeCategories") private var incomeCategoriesString: String = ""
-    
     var expenseCategories: [String] {
         expenseCategoriesString.components(separatedBy: ",").filter { !$0.isEmpty }
     }
@@ -110,16 +109,4 @@ struct AddTransactionView: View {
     AddTransactionView()
         .modelContainer(previewModelContainer)
     
-}
-
-struct LabelTextField: View {
-    var label: String
-    @Binding var text: String
-    var body: some View {
-        HStack {
-            Text(label)
-            Spacer()
-            TextField("", text: $text)
-        }
-    }
 }

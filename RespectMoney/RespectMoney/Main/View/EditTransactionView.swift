@@ -25,12 +25,16 @@ struct EditTransactionView: View {
     
     @State private var editModel: TransactionEditModel // Temporary local copy
     @State private var showDeleteAlert: Bool = false
-    @AppStorage("categories") private var categoriesString: String = ""
-    
-    var categories: [String] {
-        categoriesString.components(separatedBy: ",").filter { !$0.isEmpty }
+    @AppStorage("expenseCategories") private var expenseCategoriesString: String = ""
+    @AppStorage("incomeCategories") private var incomeCategoriesString: String = ""
+    var expenseCategories: [String] {
+        expenseCategoriesString.components(separatedBy: ",").filter { !$0.isEmpty }
     }
-    
+    var incomeCategories: [String] {
+        incomeCategoriesString.components(separatedBy: ",").filter { !$0.isEmpty }
+    }
+    @State private var transactionType: String = TransactionType.expense.rawValue
+
     let transaction: Transaction
     
     init(transaction: Transaction) {
@@ -47,6 +51,13 @@ struct EditTransactionView: View {
     var body: some View {
         NavigationStack {
             Form {
+                Picker("Type", selection: $transactionType) {
+                    ForEach(transactionTypes, id: \.self) { type in
+                        Text(type).tag(type)
+                    }
+                }
+                .pickerStyle(.segmented)
+                
                 TextField("Title", text: $editModel.title)
                     .textInputAutocapitalization(.sentences)
                     .autocorrectionDisabled(true)
@@ -57,12 +68,22 @@ struct EditTransactionView: View {
                     .numberInput($editModel.amount)
                     .font(.largeTitle)
                 
-                Picker("Category", selection: $editModel.category) {
-                    ForEach(categories, id: \.self) { category in
-                        Text(category)
+                if transactionType == TransactionType.expense.rawValue {
+                    Picker("Expense Category", selection: $editModel.category) {
+                        ForEach(expenseCategories, id: \.self) { category in
+                            Text(category).tag(category)
+                        }
                     }
+                    .pickerStyle(.wheel)
+                } else {
+                    
+                    Picker("Income Category", selection: $editModel.category) {
+                        ForEach(incomeCategories, id: \.self) { category in
+                            Text(category).tag(category)
+                        }
+                    }
+                    .pickerStyle(.wheel)
                 }
-                .pickerStyle(.wheel)
                 
                 DatePicker("Date", selection: $editModel.date, displayedComponents: .date)
                 
@@ -84,6 +105,7 @@ struct EditTransactionView: View {
                 }
             }
             .navigationTitle("Edit Transaction")
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button("Cancel") {
@@ -111,6 +133,7 @@ struct EditTransactionView: View {
             transaction.amount = amount // ✅ Store correctly rounded value
             transaction.category = editModel.category
             transaction.date = editModel.date
+            transaction.type = editModel.type
             
             try modelContext.save() // ✅ Save only explicitly
             dismiss() // Close the view

@@ -12,20 +12,27 @@ struct TransactionListView: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var transactions: [Transaction]
     
-    @State private var selectedCategory: String = "All"
+    @State private var selectedExpenseCategory: String = "All"
+    @State private var transactionType: String = "All"
     @State private var selectedMonth: Date
     @State private var selectedTransaction: Transaction?
     @State private var showAddTransaction: Bool = false
     @AppStorage("currency") private var currency: String = "USD"
     
-    @AppStorage("categories") private var categoriesString: String = ""
+    @AppStorage("expenseCategories") private var expenseCategoriesString: String = ""
     
     init() {
         _selectedMonth = State(initialValue: TransactionListView.normalizeToMonth(Date()))
     }
     
-    var categories: [String] {
-        var list = categoriesString.components(separatedBy: ",").filter { !$0.isEmpty }
+    var expenseCategories: [String] {
+        var list = expenseCategoriesString.components(separatedBy: ",").filter { !$0.isEmpty }
+        list.insert("All", at: 0)
+        return list
+    }
+    
+    var transactionsTypesWithAll: [String] {
+        var list = transactionTypes
         list.insert("All", at: 0)
         return list
     }
@@ -50,9 +57,9 @@ struct TransactionListView: View {
     /// ✅ Filter transaction by selected month and category
     var filteredTransactions: [Transaction] {
         let calendar = Calendar.current
-        return transactions.filter { expense in
-            let isSameMonth = calendar.isDate(expense.date, equalTo: selectedMonth, toGranularity: .month)
-            return isSameMonth && (selectedCategory == "All" || expense.category == selectedCategory)
+        return transactions.filter { transaction in
+            let isSameMonth = calendar.isDate(transaction.date, equalTo: selectedMonth, toGranularity: .month)
+            return isSameMonth && (selectedExpenseCategory == "All" || transaction.category == selectedExpenseCategory) && (transactionType == "All" || transaction.type == transactionType)
         }
     }
     
@@ -64,8 +71,15 @@ struct TransactionListView: View {
         NavigationStack {
             VStack {
                 HStack {
-                    Picker("Category", selection: $selectedCategory) {
-                        ForEach(categories, id: \.self) { category in
+                    Picker("Transaction Type", selection: $transactionType) {
+                        ForEach(transactionsTypesWithAll, id: \.self) { transactionType in
+                            Text(transactionType).tag(transactionType)
+                        }
+                    }
+                    .pickerStyle(.menu)
+                    
+                    Picker("Category", selection: $selectedExpenseCategory) {
+                        ForEach(expenseCategories, id: \.self) { category in
                             Text(category).tag(category)
                         }
                     }
@@ -96,9 +110,15 @@ struct TransactionListView: View {
                                                 .foregroundStyle(.secondary)
                                         }
                                         Spacer()
-                                        Text(transaction.amount.formattedAsCurrency(currency))
-                                            .font(.headline)
-                                            .foregroundStyle(.secondary)
+                                        if transaction.type == TransactionType.expense.rawValue {
+                                            Text("-\(transaction.amount.formattedAsCurrency(currency))")
+                                                .font(.headline)
+                                                .foregroundStyle(.red)
+                                        } else {
+                                            Text("+\(transaction.amount.formattedAsCurrency(currency))")
+                                                .font(.headline)
+                                                .foregroundStyle(.green)
+                                        }
                                     }
                                     .contentShape(Rectangle())
                                 }

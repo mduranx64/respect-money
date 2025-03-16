@@ -54,7 +54,7 @@ struct SettingsView: View {
                 }
                 
                 Section {
-                    Button("Delete all data") {
+                    Button("Delete All Data") {
                         showDeleteAlert = true
                     }
                     .foregroundStyle(.red)
