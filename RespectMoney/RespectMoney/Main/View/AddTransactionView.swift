@@ -10,7 +10,7 @@ import SwiftData
 
 struct AddTransactionView: View {
     @AppStorage("currency") private var currency: String = "USD"
-    @AppStorage("defaultCategory") private var category: String = "Food"
+    @AppStorage("defaultCategory") private var defaultCategory: String = "Food"
     @AppStorage("expenseCategories") private var expenseCategoriesString: String = ""
     @AppStorage("incomeCategories") private var incomeCategoriesString: String = ""
     var expenseCategories: [String] {
@@ -29,6 +29,8 @@ struct AddTransactionView: View {
     @State private var showError: Bool = false
     @State private var transactionType: String = TransactionType.expense.rawValue
     @State private var labelText: String = ""
+    @State private var selectedExpenseCategory: String = ""
+    @State private var selectedIncomeCategory: String = ""
     
     var body: some View {
         NavigationStack {
@@ -51,15 +53,14 @@ struct AddTransactionView: View {
                     .font(.largeTitle)
                 
                 if transactionType == TransactionType.expense.rawValue {
-                    Picker("Expense Category", selection: $category) {
+                    Picker("Expense Category", selection: $selectedExpenseCategory) {
                         ForEach(expenseCategories, id: \.self) { category in
                             Text(category).tag(category)
                         }
                     }
                     .pickerStyle(.wheel)
                 } else {
-                    
-                    Picker("Income Category", selection: $category) {
+                    Picker("Income Category", selection: $selectedIncomeCategory) {
                         ForEach(incomeCategories, id: \.self) { category in
                             Text(category).tag(category)
                         }
@@ -81,7 +82,7 @@ struct AddTransactionView: View {
                     Button("Save") {
                         addTransaction()
                     }
-                    .disabled(amount.isEmpty || category.isEmpty)
+                    .disabled(title.isEmpty || amount.isEmpty)
                 }
             }
             .alert("Invalid Amount", isPresented: $showError) {
@@ -91,6 +92,10 @@ struct AddTransactionView: View {
             }
             
         }
+        .onAppear {
+            selectedExpenseCategory = defaultCategory
+            selectedIncomeCategory = incomeCategories.first ?? ""
+        }
     }
     
     private func addTransaction() {
@@ -98,8 +103,15 @@ struct AddTransactionView: View {
             showError = true
             return
         }
-        
-        let newTransaction = Transaction(title: title, amount: amount, category: category, date: date, type: transactionType)
+        let category = transactionType == TransactionType.expense.rawValue ? selectedExpenseCategory : selectedIncomeCategory
+
+        let newTransaction = Transaction(
+            title: title,
+            amount: amount,
+            category: category,
+            date: date,
+            type: transactionType
+        )
         modelContext.insert(newTransaction)
         dismiss()
     }
