@@ -57,15 +57,29 @@ struct TransactionListView: View {
     /// ✅ Filter transaction by selected month and category
     var filteredTransactions: [Transaction] {
         transactions.filter { transaction in
-                let isSameMonth = Calendar.current.isDate(transaction.date, equalTo: selectedMonth, toGranularity: .month)
-                let matchesCategory = selectedExpenseCategory == "All" || transaction.category == selectedExpenseCategory
-                let matchesType = transactionType == "All" || transaction.type == transactionType // ✅ Filter by type
-                return isSameMonth && matchesCategory && matchesType
-            }
+            let isSameMonth = Calendar.current.isDate(transaction.date, equalTo: selectedMonth, toGranularity: .month)
+            let matchesCategory = selectedExpenseCategory == "All" || transaction.category == selectedExpenseCategory
+            let matchesType = transactionType == "All" || transaction.type == transactionType // ✅ Filter by type
+            return isSameMonth && matchesCategory && matchesType
+        }
     }
     
-    var groupedTransactions: [String: [Transaction]] {
-        Dictionary(grouping: filteredTransactions, by: { $0.category })
+    /// ✅ Group transactions **first by type, then by category**
+    var groupedTransactions: [String: [String: [Transaction]]] {
+        let groupedByType = Dictionary(grouping: filteredTransactions, by: { $0.type })
+        
+        return groupedByType.mapValues { transactions in
+            Dictionary(grouping: transactions, by: { $0.category })
+        }
+    }
+    
+    /// ✅ Compute total income & expenses per type
+    var totalPerType: [String: Double] {
+        var totals: [String: Double] = [:]
+        for (type, transactions) in groupedTransactions {
+            totals[type] = transactions.values.flatMap { $0 }.reduce(0) { $0 + $1.amount }
+        }
+        return totals
     }
     
     var body: some View {
@@ -75,7 +89,7 @@ struct TransactionListView: View {
                     Picker("Transaction Type", selection: $transactionType) {
                         ForEach(transactionsTypesWithAll, id: \.self) { transactionType in
                             Text(transactionType).tag(transactionType)
-                                
+                            
                         }
                     }
                     .pickerStyle(.menu)
@@ -97,37 +111,51 @@ struct TransactionListView: View {
                 .frame(maxWidth: .infinity, alignment: .center)
                 
                 List {
-                    ForEach(groupedTransactions.keys.sorted(), id: \.self) { category in
-                        Section(header: Text(category).font(.headline)) {
-                            ForEach(groupedTransactions[category] ?? []) { transaction in
-                                Button {
-                                    selectedTransaction = transaction
-                                } label: {
-                                    HStack {
-                                        VStack(alignment: .leading) {
-                                            Text(transaction.title)
-                                                .font(.headline)
-                                                .foregroundStyle(.secondary)
-                                            Text(transaction.category)
-                                                .font(.subheadline)
-                                                .foregroundStyle(.secondary)
+                    ForEach(groupedTransactions.keys.sorted(), id: \.self) { type in
+                        let total = totalPerType[type] ?? 0
+                        
+                        Section(header: HStack {
+                            Text(type)
+                                .font(.title2)
+                                .bold()
+                            Spacer()
+                            Text(total.formattedAsCurrency(currency)) // ✅ Show total per type
+                                .foregroundColor(type == TransactionType.expense.rawValue ? .red : .green)
+                                .bold()
+                        }) {
+                            ForEach(groupedTransactions[type]!.keys.sorted(), id: \.self) { category in
+                                Section(header: Text(category).font(.headline)) {
+                                    ForEach(groupedTransactions[type]![category] ?? []) { transaction in
+                                        Button {
+                                            selectedTransaction = transaction
+                                        } label: {
+                                            HStack {
+                                                VStack(alignment: .leading) {
+                                                    Text(transaction.title)
+                                                        .font(.headline)
+                                                        .foregroundStyle(.secondary)
+                                                    Text(transaction.category)
+                                                        .font(.subheadline)
+                                                        .foregroundStyle(.secondary)
+                                                }
+                                                Spacer()
+                                                if transaction.type == TransactionType.expense.rawValue {
+                                                    Text("-\(transaction.amount.formattedAsCurrency(currency))")
+                                                        .font(.headline)
+                                                        .foregroundStyle(.red)
+                                                } else {
+                                                    Text("+\(transaction.amount.formattedAsCurrency(currency))")
+                                                        .font(.headline)
+                                                        .foregroundStyle(.green)
+                                                }
+                                            }
+                                            .contentShape(Rectangle())
                                         }
-                                        Spacer()
-                                        if transaction.type == TransactionType.expense.rawValue {
-                                            Text("-\(transaction.amount.formattedAsCurrency(currency))")
-                                                .font(.headline)
-                                                .foregroundStyle(.red)
-                                        } else {
-                                            Text("+\(transaction.amount.formattedAsCurrency(currency))")
-                                                .font(.headline)
-                                                .foregroundStyle(.green)
-                                        }
+                                        .buttonStyle(.plain)
                                     }
-                                    .contentShape(Rectangle())
+                                    .onDelete(perform: deleteTransaction)
                                 }
-                                .buttonStyle(.plain)
                             }
-                            .onDelete(perform: deleteTransaction)
                         }
                     }
                 }
@@ -160,10 +188,10 @@ struct TransactionListView: View {
     }
     
     static func normalizeToMonth(_ date: Date) -> Date {
-       let calendar = Calendar.current
-       let components = calendar.dateComponents([.year, .month], from: date)
-       return calendar.date(from: components) ?? date
-   }
+        let calendar = Calendar.current
+        let components = calendar.dateComponents([.year, .month], from: date)
+        return calendar.date(from: components) ?? date
+    }
 }
 
 #Preview {

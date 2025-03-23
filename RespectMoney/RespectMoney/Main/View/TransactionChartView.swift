@@ -33,6 +33,10 @@ struct TransactionChartView: View {
         totalIncome + totalExpense
     }
     
+    var totalSavings: Double {
+        totalIncome - totalExpense
+    }
+    
     /// ✅ Computed property that assigns colors in order without modifying state
     var categoryColorMap: [String: Color] {
         var tempMap: [String: Color] = [:]
@@ -66,13 +70,17 @@ struct TransactionChartView: View {
         NavigationStack {
             VStack {
                 // ✅ Show total income and expense
-                HStack {
+                VStack {
                     Text("Income: \(totalIncome.formattedAsCurrency(currency))")
                         .foregroundColor(.green)
                         .bold()
-                    Spacer()
+                    
                     Text("Expenses: \(totalExpense.formattedAsCurrency(currency))")
                         .foregroundColor(.red)
+                        .bold()
+
+                    Text("Savings: \(totalSavings.formattedAsCurrency(currency))")
+                        .foregroundColor(.blue)
                         .bold()
                 }
                 .font(.title3)
@@ -106,29 +114,8 @@ struct TransactionChartView: View {
                                     .padding(5)
                                     .cornerRadius(5)
                                 }
-
-                                // ✅ Bar 2: Net Savings (Income - Expenses)
-                                BarMark(
-                                    x: .value("Type", "Net Savings"),
-                                    y: .value("Amount", totalIncome - totalExpense)
-                                )
-                                .foregroundStyle(.blue)
-                                .cornerRadius(5)
-                                .annotation(position: .top) {
-                                    VStack {
-                                        Text("\(((totalIncome - totalExpense) / totalAmount) * 100, specifier: "%.1f")%")
-                                            .font(.caption)
-                                            .bold()
-                                            .foregroundColor(.blue)
-                                        Text((totalIncome - totalExpense).formattedAsCurrency(currency))
-                                            .font(.caption)
-                                            .foregroundColor(.primary)
-                                    }
-                                    .padding(5)
-                                    .cornerRadius(5)
-                                }
-
-                                // ✅ Bar 3: Total Expenses
+                                
+                                // ✅ Bar 2: Total Expenses
                                 BarMark(
                                     x: .value("Type", "Total Expenses"),
                                     y: .value("Amount", totalExpense)
@@ -148,6 +135,28 @@ struct TransactionChartView: View {
                                     .padding(5)
                                     .cornerRadius(5)
                                 }
+
+                                // ✅ Bar 3: Net Savings (Income - Expenses)
+                                BarMark(
+                                    x: .value("Type", "Net Savings"),
+                                    y: .value("Amount", totalSavings)
+                                )
+                                .foregroundStyle(.blue)
+                                .cornerRadius(5)
+                                .annotation(position: .top) {
+                                    VStack {
+                                        Text("\((totalSavings / totalAmount) * 100, specifier: "%.1f")%")
+                                            .font(.caption)
+                                            .bold()
+                                            .foregroundColor(.blue)
+                                        Text(totalSavings.formattedAsCurrency(currency))
+                                            .font(.caption)
+                                            .foregroundColor(.primary)
+                                    }
+                                    .padding(5)
+                                    .cornerRadius(5)
+                                }
+
                             }
                             .frame(width: geometry.size.width)
                         }
