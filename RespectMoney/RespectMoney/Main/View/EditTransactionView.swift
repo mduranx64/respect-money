@@ -8,8 +8,6 @@
 import SwiftUI
 import SwiftData
 
-import SwiftUI
-
 /// ✅ A separate model for editing (prevents unwanted auto-saves)
 struct TransactionEditModel {
     var title: String
